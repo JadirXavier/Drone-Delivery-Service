@@ -21,19 +21,43 @@ def read_data():
     try:
         with open("input.txt", "r") as file:
             lines = file.readlines()
+
+            if len(lines) < 2:
+                print("Error: Input file is missing data.")
+                return None, None
+
             drones = []
             locations = []
+
             drones_line = lines[0].strip().replace('[', '').replace(']', '').split(",")
+            if len(drones_line) % 2 != 0:
+                print("Error: Incorrect format for drone information.")
+                return None, None
 
             for line in lines[1:]:
                 location_line = line.replace('[', '').replace(']', '').split(",")
+
+                if len(location_line) != 2:
+                    print("Error: Incorrect format for location information.")
+                    return None, None
+
                 name = location_line[0].strip()
-                weight = int(location_line[1].strip())
+                try:
+                    weight = int(location_line[1].strip())
+                except ValueError:
+                    print("Error: Package weight must be an integer.")
+                    return None, None
+
                 locations.append(Location(name, weight))
 
             for i in range(0, len(drones_line), 2):
                 name = drones_line[i].strip()
-                max_weight = int(drones_line[i + 1].strip())
+                try:
+                    max_weight = int(drones_line[i + 1].strip())
+                except ValueError:
+                    print("Error: Maximum weight must be an integer.")
+                    return None, None
+
                 drones.append(Drone(name, max_weight))
 
             locations.sort(key=lambda location: location.weight, reverse=True)
@@ -42,9 +66,13 @@ def read_data():
             return drones, locations
 
     except FileNotFoundError:
-        print("Input file not found.")
+        print("Error: Input file not found.")
+        return None, None
 
 def make_deliveries(drones, locations):
+    if drones is None or locations is None:
+         print("Error reading data. Please ensure that the input is formatted correctly.")
+         return
     while locations:
         for drone in drones:
             remaining_capacity = drone.max_weight
@@ -67,6 +95,7 @@ def make_deliveries(drones, locations):
                 formatted_trip = [f"[{location}]" for location in trip]
                 file.write(", ".join(formatted_trip) + "\n")
             file.write("\n")
+        print("Generated output file.")
 
 if __name__ == "__main__":
     main()
